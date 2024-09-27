@@ -46,8 +46,8 @@ const messages = [
   // user 1   chat 1   message 1  version only 1
   {
     // 
-    msgId: "u1-c1-m1",
-    versionId: "u1-c1-m1-v1-r1",
+    msgId: "a1c1b1b1-3913-43ca-823d-3c3709ebdc14",
+    versionId: "a1c1b1b1-b113-43ca-823d-3c3709ebdc14",
     content: "c1 author u1",
     response: "u1-c1-m1-v1-r1",
     chatId: "c1cd1234-4001-4271-9855-fec4b6a6442a",
@@ -56,38 +56,38 @@ const messages = [
   // user 1  chat 2 message 1   version 3
   {
     // 
-    msgId: "u1-c2-m1",
-    versionId: "u1-c2-m1-v1-r1",
+    msgId: "a1c2b1b3-3913-43ca-823d-3c3709ebdc14",
+    versionId: "a1c2b1b3-b113-43ca-823d-3c3709ebdc14",
     content: "u1-c2-m1-v1-r1",
     response:"u1-c2-m1-v1-r1",
     chatId: "c1cd1234-4001-4271-9855-fec4b6a6442a",
   },
   {
     // 
-    msgId: "u1-c2-m1",
-    versionId: "u1-c2-m1-v2-r1",
+    msgId: "a1c2b1b3-3913-43ca-823d-3c3709ebdc14",
+    versionId: "a1c2b1b3-b213-43ca-823d-3c3709ebdc14",
     content: "u1-c2-m1-v2-r1",
     response:"u1-c2-m1-v2-r1",
     chatId: "c1cd1234-4001-4271-9855-fec4b6a6442a",
   },
   {
     // 
-    msgId: "u1-c2-m1",
-    versionId: "u1-c2-m1-v3-r1",
+    msgId: "a1c2b1b3-3913-43ca-823d-3c3709ebdc14",
+    versionId: "a1c2b1b3-b313-43ca-823d-3c3709ebdc14",
     content: "u1-c2-m1-v3-r1",
     response:"u1-c2-m1-v3-r1",
     chatId: "c1cd1234-4001-4271-9855-fec4b6a6442a",
   },
   
-  // user 2 chat 3 message 2 version 1
-  {
-    // 
-    msgId: "u2-c3-m2",
-    versionId: "u2-c3-m2-v1-r1",
-    content: "u2-c3-m2-v1-r1",
-    response: "u2-c3-m2-v1-r1",
-    chatId: "c234abcd-4001-4271-9855-fec4b6a6442a",
-  },
+  // // user 2 chat 3 message 2 version 1
+  // {
+  //   // 
+  //   msgId: "u2-c3-m2",
+  //   versionId: "u2-c3-m2-v1-r1",
+  //   content: "u2-c3-m2-v1-r1",
+  //   response: "u2-c3-m2-v1-r1",
+  //   chatId: "c234abcd-4001-4271-9855-fec4b6a6442a",
+  // },
 ]
 
 // need to remove
@@ -228,4 +228,4 @@ const revenue = [
   { month: 'Dec', revenue: 4800 },
 ];
 
-export { users, customers, invoices, revenue };
+export { users, customers, invoices, revenue, chats, messages };
