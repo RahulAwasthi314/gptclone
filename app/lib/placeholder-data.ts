@@ -1,14 +1,96 @@
 // This file contains placeholder data that you'll be replacing with real data in the Data Fetching chapter:
 // https://nextjs.org/learn/dashboard-app/fetching-data
+
+// Users Table
 const users = [
   {
-    id: '410544b2-4001-4271-9855-fec4b6a6442a',
-    name: 'User',
-    email: 'user@nextmail.com',
+    id: 'a10544b2-4001-4271-9855-fec4b6a6442a',
+    name: 'Rahul Awasthi',
+    email: 'awasthir314@gmail.com',
     password: '123456',
   },
+  {
+    id: 'a20544b2-4001-4271-9855-bec566a6442a',
+    name: 'Jonathan Williams',
+    email: 'jonathan@savasana.ai',
+    password: '123456',
+  }
+
 ];
 
+// Chat title: 2 Demo title for each user
+const chats = [
+  {
+    id: 'c1cd1234-4001-4271-9855-fec4b6a6442a',
+    chatTitle: 'Chat Title Author Rahul',
+    authorId: 'a10544b2-4001-4271-9855-fec4b6a6442a',
+  },
+  {
+    id: 'c234abcd-4001-4271-9855-fec4b6a6442a',
+    chatTitle: 'Chat Title Author Rahul Awasthi',
+    authorId: 'a10544b2-4001-4271-9855-fec4b6a6442a',
+  },
+  {
+    id: 'c32bc34d-4001-4271-9855-fec4b6a6442a',
+    chatTitle: 'Chat Title Author Jonathan',
+    authorId: 'a20544b2-4001-4271-9855-bec566a6442a',
+  },
+  {
+    id: 'c42a3cd4-4001-4271-9855-fec4b6a6442a',
+    chatTitle: 'Chat Title Author Jonathan Williams',
+    authorId: 'a20544b2-4001-4271-9855-bec566a6442a',
+  }
+]
+
+const messages = [
+  // user 1   chat 1   message 1  version only 1
+  {
+    // 
+    msgId: "u1-c1-m1",
+    versionId: "u1-c1-m1-v1-r1",
+    content: "c1 author u1",
+    response: "u1-c1-m1-v1-r1",
+    chatId: "c1cd1234-4001-4271-9855-fec4b6a6442a",
+  },
+
+  // user 1  chat 2 message 1   version 3
+  {
+    // 
+    msgId: "u1-c2-m1",
+    versionId: "u1-c2-m1-v1-r1",
+    content: "u1-c2-m1-v1-r1",
+    response:"u1-c2-m1-v1-r1",
+    chatId: "c1cd1234-4001-4271-9855-fec4b6a6442a",
+  },
+  {
+    // 
+    msgId: "u1-c2-m1",
+    versionId: "u1-c2-m1-v2-r1",
+    content: "u1-c2-m1-v2-r1",
+    response:"u1-c2-m1-v2-r1",
+    chatId: "c1cd1234-4001-4271-9855-fec4b6a6442a",
+  },
+  {
+    // 
+    msgId: "u1-c2-m1",
+    versionId: "u1-c2-m1-v3-r1",
+    content: "u1-c2-m1-v3-r1",
+    response:"u1-c2-m1-v3-r1",
+    chatId: "c1cd1234-4001-4271-9855-fec4b6a6442a",
+  },
+  
+  // user 2 chat 3 message 2 version 1
+  {
+    // 
+    msgId: "u2-c3-m2",
+    versionId: "u2-c3-m2-v1-r1",
+    content: "u2-c3-m2-v1-r1",
+    response: "u2-c3-m2-v1-r1",
+    chatId: "c234abcd-4001-4271-9855-fec4b6a6442a",
+  },
+]
+
+// need to remove
 const customers = [
   {
     id: 'd6e15727-9fe1-4961-8c5b-ea44a9bd81aa',
@@ -48,6 +130,7 @@ const customers = [
   },
 ];
 
+// need to remove
 const invoices = [
   {
     customer_id: customers[0].id,
@@ -129,6 +212,7 @@ const invoices = [
   },
 ];
 
+// need to remove
 const revenue = [
   { month: 'Jan', revenue: 2000 },
   { month: 'Feb', revenue: 1800 },
