@@ -2,12 +2,31 @@
 // It describes the shape of the data, and what data type each property should accept.
 // For simplicity of teaching, we're manually defining these types.
 // However, these types are generated automatically if you're using an ORM such as Prisma.
+
+// User Model
 export type User = {
   id: string;
   name: string;
   email: string;
   password: string;
 };
+
+// Chat Model
+export type Chat = {
+  id: string;
+  chatTitle: string;
+  authorId: string;
+};
+
+// Message Model
+export type Message = {
+  msgId: string;
+  versionId: string;
+  content: string;
+  response: string | undefined;
+  chatId: string;
+};
+
 
 export type Customer = {
   id: string;
