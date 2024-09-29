@@ -132,3 +132,31 @@ export async function updateMessageVersion(prevState: MsgState, formData: FormDa
   revalidatePath('/dashboard/chats');
   redirect('/dashboard/chats');
 }
+
+export async function deleteChatById(chatId: string) {
+  // Start a transaction to ensure both deletions happen together
+  try {
+    await sql`BEGIN;`;
+
+    // Delete messages associated with the chatId
+    await sql`
+      DELETE FROM messages WHERE chatId = ${chatId};
+    `;
+
+    // Delete the chat with the given chatId
+    await sql`
+      DELETE FROM chats WHERE id = ${chatId};
+    `;
+
+    // Commit the transaction
+    await sql`COMMIT;`;
+    
+    console.log(`Chat and its associated messages deleted successfully.`);
+    revalidatePath('/dashboard/chats');
+    redirect('/dashboard/chats');
+  } catch (error) {
+    // If something goes wrong, rollback the transaction
+    await sql`ROLLBACK;`;
+    console.error(`Error deleting chat and messages: `, error);
+  }
+}

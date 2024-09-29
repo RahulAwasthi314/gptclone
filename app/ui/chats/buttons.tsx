@@ -1,5 +1,4 @@
-
-import { deleteChatById } from "@/app/lib/data";
+import { deleteChatById } from "@/app/lib/actions";
 import { Message } from "@/app/lib/definitions";
 import { PencilIcon, PlusIcon, TrashIcon } from "@heroicons/react/24/solid";
 import Link from "next/link";
