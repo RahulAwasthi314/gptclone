@@ -114,7 +114,7 @@ export async function updateMessageVersion(
     };
   }
 
-  const { msgId, versionId, content, chatId, response} = validatedFields.data;
+  const { msgId, content, chatId, response} = validatedFields.data;
 
   try {
     await sql`
