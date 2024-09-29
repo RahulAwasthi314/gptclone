@@ -1,229 +1,191 @@
 import { sql } from '@vercel/postgres';
 import {
-  CustomerField,
-  CustomersTableType,
-  InvoiceForm,
-  InvoicesTable,
-  LatestInvoiceRaw,
-  Revenue,
+  Chat,
+  ChatRow,
+  Message,
+  MessageRow,
 } from './definitions';
-import { formatCurrency } from './utils';
 
-// export async function createChat() {
-
-// }
-
-// export async function deleteChat() {
-
-// }
-
-// export async function getMessagesById() {
-
-// }
-
-export async function fetchRevenue() {
+// create chat
+export async function createChat(chat: Chat) {
   try {
-    // Artificially delay a response for demo purposes.
-    // Don't do this in production :)
-
-    // console.log('Fetching revenue data...');
-    // await new Promise((resolve) => setTimeout(resolve, 3000));
-
-    const data = await sql<Revenue>`SELECT * FROM revenue`;
-
-    // console.log('Data fetch completed after 3 seconds.');
-
-    return data.rows;
+    await sql`
+      INSERT INTO chats (chatTitle, authorId)
+      VALUES (${chat.chatTitle}, ${chat.authorId});
+    `;
   } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch revenue data.');
+    console.log(error);
+    throw new Error('Failed to create new chat');
   }
 }
 
-export async function fetchLatestInvoices() {
+export async function getAllChats() {
   try {
-    const data = await sql<LatestInvoiceRaw>`
-      SELECT invoices.amount, customers.name, customers.image_url, customers.email, invoices.id
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      ORDER BY invoices.date DESC
-      LIMIT 5`;
-
-    const latestInvoices = data.rows.map((invoice) => ({
-      ...invoice,
-      amount: formatCurrency(invoice.amount),
-    }));
-    return latestInvoices;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch the latest invoices.');
+    const result = await sql<ChatRow>`
+      SELECT * FROM chats`;
+      console.log(result.rows);
+      const chats = result.rows.map((row) => ({
+        id: row.id,
+        chatTitle: row.chattitle,
+        authorId: row.authorid,
+      }));
+    return chats;
+    
+  } catch(error) {
+    console.log(error);
+    throw new Error("Error fetching chats");
   }
 }
 
-export async function fetchCardData() {
+export async function getMessageByVersionId(versionId: string) {
   try {
-    // You can probably combine these into a single SQL query
-    // However, we are intentionally splitting them to demonstrate
-    // how to initialize multiple queries in parallel with JS.
-    const invoiceCountPromise = sql`SELECT COUNT(*) FROM invoices`;
-    const customerCountPromise = sql`SELECT COUNT(*) FROM customers`;
-    const invoiceStatusPromise = sql`SELECT
-         SUM(CASE WHEN status = 'paid' THEN amount ELSE 0 END) AS "paid",
-         SUM(CASE WHEN status = 'pending' THEN amount ELSE 0 END) AS "pending"
-         FROM invoices`;
-
-    const data = await Promise.all([
-      invoiceCountPromise,
-      customerCountPromise,
-      invoiceStatusPromise,
-    ]);
-
-    const numberOfInvoices = Number(data[0].rows[0].count ?? '0');
-    const numberOfCustomers = Number(data[1].rows[0].count ?? '0');
-    const totalPaidInvoices = formatCurrency(data[2].rows[0].paid ?? '0');
-    const totalPendingInvoices = formatCurrency(data[2].rows[0].pending ?? '0');
-
-    return {
-      numberOfCustomers,
-      numberOfInvoices,
-      totalPaidInvoices,
-      totalPendingInvoices,
+    const result = await sql<MessageRow>`
+      SELECT * FROM messages 
+      WHERE versionId = ${versionId} 
+      LIMIT 1;
+    `;
+    const messages = result.rows[0];
+    const message = {
+      msgId: messages.msgid,
+      content: messages.content,
+      chatId: messages.chatid,
+      response: messages.response,
+      versionId: messages.versionid,
     };
+    // console.log(messages.rows);
+    return message;
+
   } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch card data.');
+    console.error(`Error retrieving message for versionId ${versionId}: `, error);
+    throw new Error(`Error retrieving message for version ${versionId}`);
   }
 }
 
-const ITEMS_PER_PAGE = 6;
-export async function fetchFilteredInvoices(
-  query: string,
-  currentPage: number,
-) {
-  const offset = (currentPage - 1) * ITEMS_PER_PAGE;
-
+export async function getMessagesByChatId(chatId: string) {
   try {
-    const invoices = await sql<InvoicesTable>`
-      SELECT
-        invoices.id,
-        invoices.amount,
-        invoices.date,
-        invoices.status,
-        customers.name,
-        customers.email,
-        customers.image_url
-      FROM invoices
-      JOIN customers ON invoices.customer_id = customers.id
-      WHERE
-        customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`} OR
-        invoices.amount::text ILIKE ${`%${query}%`} OR
-        invoices.date::text ILIKE ${`%${query}%`} OR
-        invoices.status ILIKE ${`%${query}%`}
-      ORDER BY invoices.date DESC
-      LIMIT ${ITEMS_PER_PAGE} OFFSET ${offset}
+    const result = await sql<MessageRow>`
+      SELECT * FROM messages WHERE chatId = ${chatId};
     `;
-
-    return invoices.rows;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch invoices.');
-  }
-}
-
-export async function fetchInvoicesPages(query: string) {
-  try {
-    const count = await sql`SELECT COUNT(*)
-    FROM invoices
-    JOIN customers ON invoices.customer_id = customers.id
-    WHERE
-      customers.name ILIKE ${`%${query}%`} OR
-      customers.email ILIKE ${`%${query}%`} OR
-      invoices.amount::text ILIKE ${`%${query}%`} OR
-      invoices.date::text ILIKE ${`%${query}%`} OR
-      invoices.status ILIKE ${`%${query}%`}
-  `;
-
-    const totalPages = Math.ceil(Number(count.rows[0].count) / ITEMS_PER_PAGE);
-    return totalPages;
-  } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch total number of invoices.');
-  }
-}
-
-export async function fetchInvoiceById(id: string) {
-  try {
-    const data = await sql<InvoiceForm>`
-      SELECT
-        invoices.id,
-        invoices.customer_id,
-        invoices.amount,
-        invoices.status
-      FROM invoices
-      WHERE invoices.id = ${id};
-    `;
-
-    const invoice = data.rows.map((invoice) => ({
-      ...invoice,
-      // Convert amount from cents to dollars
-      amount: invoice.amount / 100,
+    const messages = result.rows.map((row) => ({
+      msgId: row.msgid,
+      content: row.content,
+      chatId: row.chatid,
+      response: row.response,
+      versionId: row.versionid,
     }));
-
-    return invoice[0];
+    // console.log(messages.rows);
+    return messages;
   } catch (error) {
-    console.error('Database Error:', error);
-    throw new Error('Failed to fetch invoice.');
+    console.error(`Error retrieving messages for chatId ${chatId}: `, error);
+    throw new Error(`Error retrieving messages for chatId ${chatId}`);
   }
 }
 
-export async function fetchCustomers() {
+export async function getMsgVersionsByMessageId(msgId: string) {
   try {
-    const data = await sql<CustomerField>`
-      SELECT
-        id,
-        name
-      FROM customers
-      ORDER BY name ASC
+    const messageVersions = await sql<Message[]>`
+      SELECT * FROM messages WHERE msgId = ${msgId};
+    `;
+    console.log(messageVersions);
+    return messageVersions;
+  } catch (error) {
+    console.error(`Error retrieving message versions for msgId ${msgId}: `, error);
+    throw new Error(`Error retrieving message versions for msgId ${msgId}`);
+  }
+}
+
+export async function getResponseByMsgVersionId(msgVersionId: string) {
+  try {
+    const result = await sql`
+      SELECT response FROM messages WHERE versionId = ${msgVersionId};
+    `;
+    if (result === null) throw new Error("Response Does not found for this message.");
+    console.log(result);
+    return result;
+  } catch (error) {
+    console.error(`Error retrieving response for versionId ${msgVersionId}: `, error);
+    throw new Error(`Error retrieving response for versionId ${msgVersionId}`);
+  }
+}
+
+export async function postMsgByMsgId(message: Message) {
+  const {msgId, versionId, content, response, chatId} = message;
+  try {
+     await sql`
+      INSERT INTO messages (msgId, versionId, content, response, chatId)
+      VALUES (${msgId}, ${versionId}, ${content}, ${response}, ${chatId});
+    `;
+  } catch (error) {
+    console.error(`Error posting message with msgId ${message.msgId}: `, error);
+    throw new Error(`Error posting message with msgId ${message.msgId}: ${error}`);
+  }
+}
+
+
+export async function updateResponseByMsgVersionId(versionId: string, message: Message) {
+  try {
+    await sql`
+    UPDATE messages
+    SET response = ${message.response}
+    WHERE versionId = ${versionId}
+    `;
+  } catch (error) {
+    console.log(error);
+    throw new Error("Error updating response");
+  }
+}
+
+
+// place the delete messages by chatId logic here
+export async function deleteMessageByMsgVersionId(msgId: string, versionId: string) {
+  try {
+    await sql`
+    DELETE FROM messages
+    WHERE msgId = ${msgId} and versionId = ${versionId}
+    `;
+  } catch(error) {
+    console.log(error);
+    throw new Error("Messaged deletion failed.");
+  }
+}
+
+
+export async function deleteChatById(chatId: string) {
+  // Start a transaction to ensure both deletions happen together
+  try {
+    await sql`BEGIN;`;
+
+    // Delete messages associated with the chatId
+    await sql`
+      DELETE FROM messages WHERE chatId = ${chatId};
     `;
 
-    const customers = data.rows;
-    return customers;
-  } catch (err) {
-    console.error('Database Error:', err);
-    throw new Error('Failed to fetch all customers.');
+    // Delete the chat with the given chatId
+    await sql`
+      DELETE FROM chats WHERE id = ${chatId};
+    `;
+
+    // Commit the transaction
+    await sql`COMMIT;`;
+    
+    console.log(`Chat and its associated messages deleted successfully.`);
+  } catch (error) {
+    // If something goes wrong, rollback the transaction
+    await sql`ROLLBACK;`;
+    console.error(`Error deleting chat and messages: `, error);
   }
 }
 
-export async function fetchFilteredCustomers(query: string) {
+
+export async function getMessagesById(msgId: string) {
   try {
-    const data = await sql<CustomersTableType>`
-		SELECT
-		  customers.id,
-		  customers.name,
-		  customers.email,
-		  customers.image_url,
-		  COUNT(invoices.id) AS total_invoices,
-		  SUM(CASE WHEN invoices.status = 'pending' THEN invoices.amount ELSE 0 END) AS total_pending,
-		  SUM(CASE WHEN invoices.status = 'paid' THEN invoices.amount ELSE 0 END) AS total_paid
-		FROM customers
-		LEFT JOIN invoices ON customers.id = invoices.customer_id
-		WHERE
-		  customers.name ILIKE ${`%${query}%`} OR
-        customers.email ILIKE ${`%${query}%`}
-		GROUP BY customers.id, customers.name, customers.email, customers.image_url
-		ORDER BY customers.name ASC
-	  `;
-
-    const customers = data.rows.map((customer) => ({
-      ...customer,
-      total_pending: formatCurrency(customer.total_pending),
-      total_paid: formatCurrency(customer.total_paid),
-    }));
-
-    return customers;
-  } catch (err) {
-    console.error('Database Error:', err);
-    throw new Error('Failed to fetch customer table.');
+    const messages = await sql<Message[]>`
+      SELECT * FROM messages WHERE msgId = ${msgId};
+    `;
+    console.log(messages);
+    return messages;
+  } catch(error) {
+    console.log(error);
+    throw new Error("Error getting the messages.");
   }
 }
