@@ -6,19 +6,22 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { Button } from '@/app/ui/button';
-import { MsgState, updateMessageVersion } from '@/app/lib/actions';
 import { useActionState } from 'react';
+import { MsgState, updateMessageVersion } from '@/app/lib/actions';
 
 export default function EditMsgForm({
   message
 }: {
   message: Message
 }) {
-  const initialState: MsgState = { message: null, errors: {}};
-  const addMessageWithId = updateMessageVersion.bind(null, message.msgId);
-  const [state, formAction] = useActionState(addMessageWithId, initialState);
+  
+  const initialState: MsgState = { message: null, errors: {} };
+  const [state, msgAction] = useActionState(updateMessageVersion, initialState);
+  // const initialState: MsgState = { message: null, errors: {}};
+  // // const addMessageWithId = updateMessageVersion.bind(null, message.msgId);
+  // const [state, formAction] = useActionState(updateMessageVersion, initialState);
   return (
-    <form action={formAction}>
+    <form action={msgAction}>
       <div className="rounded-md bg-gray-50 p-4 md:p-6">
         
 
@@ -52,36 +55,6 @@ export default function EditMsgForm({
           </div>
         </div>
 
-
-        {/* version ID */}
-        <div className="mb-4">
-          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
-            Version ID
-          </label>
-          <div className="relative mt-2 rounded-md">
-            <div className="relative">
-              <input
-                id="versionId"
-                name="versionId"
-                type="text"
-                defaultValue={message.versionId}
-                placeholder="Version Id"
-                className="peer block w-full rounded-md border border-gray-200 py-2 pl-10 text-sm outline-2 placeholder:text-gray-500"
-                aria-describedby='versionId-error'
-                readOnly
-              />
-              <CurrencyDollarIcon className="pointer-events-none absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
-            </div>
-            <div id="versionId-error" aria-live="polite" aria-atomic="true">
-              {state.errors?.versionId &&
-                state.errors.versionId.map((error: string) => (
-                  <p className="mt-2 text-sm text-red-500" key={error}>
-                    {error}
-                  </p>
-                ))}
-            </div>
-          </div>
-        </div>
 
         {/* message ID */}
         <div className="mb-4">

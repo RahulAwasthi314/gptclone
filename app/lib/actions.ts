@@ -4,22 +4,14 @@ import { sql } from '@vercel/postgres';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
-const msgSchema = z.object({
-  msgId: z.string({
-    required_error: 'MessageId required',
-  }),
-  versionId: z.string(),
-  content: z.string({
-    required_error: "Content is required",
-  }),
-  response: z.string({
-    required_error: 'Response is required',
-  }),
-  chatId: z.string({
-    required_error: "chat Id is required",
-  })
-});
- 
+export type ChatState = {
+  errors?: {
+    // id?: string[],
+    chatTitle?: string[],
+    authorId?: string[],
+  };
+  message?: string | null;
+}
 
 const chatSchema = z.object({
   chatTitle: z.string({
@@ -70,60 +62,73 @@ export async function createChat(prevState: ChatState, formData: FormData) {
   redirect('/dashboard/chats');
 }
 
-export type ChatState = {
-  errors?: {
-    // id?: string[],
-    chatTitle?: string[],
-    authorId?: string[],
-  };
-  message?: string | null;
-}
 
 export type MsgState = {
   errors?: {
-    msgId?: string[];
-    versionId?: string[];
-    content?: string[];
-    response?: string[];
-    chatId?: string[];
+    msgId?: string[],
+    // versionId?: string[],
+    chatId?: string[],
+    content?: string[],
+    response?: string[],
   };
   message?: string | null;
 }
 
+const msgSchema = z.object({
+  msgId: z.string({
+    required_error: 'msgId required',
+  }),
+  versionId: z.string({
+    required_error: 'versionId required',
+  }),
+  chatId: z.string({
+    required_error: 'chatId required',
+  }),
+  content: z.string({
+    required_error: 'content required',
+  }),
+  response: z.string({
+    required_error: 'response required',
+  }),
+})
+
 const UpdateMessageVersion = msgSchema.omit({
-  // versionId: true,
+  // id: true, 
+    // versionId: true,
+  // authorId: true,
 });
 
-export async function updateMessageVersion(
-  id: string,
-  prevState: MsgState,
-  formData: FormData
-) {
+export async function updateMessageVersion(prevState: MsgState, formData: FormData) {
   const validatedFields = UpdateMessageVersion.safeParse({
     msgId: formData.get('msgId'),
-    versionId: formData.get('versionId'),
-    content: formData.get('content'),
+    // versionId: formData.get('versionId'),
     chatId: formData.get('chatId'),
+    content: formData.get('content'),
     response: formData.get('response'),
-  });
+  })
 
   if (!validatedFields.success) {
     return {
       errors: validatedFields.error.flatten().fieldErrors,
-      message: 'Missing Fields. Failed to create a new version of message.'
+      message: 'Missing Fields. Failed to Create New Chat.',
+    };
+  }
+  
+  const { msgId, chatId, content, response } = validatedFields.data;
+  // console.log(`chatTitle: ${chatTitle}`);
+ 
+  try {
+    await sql`
+      INSERT INTO messages (msgId, chatId, content, response)
+      VALUES (${msgId}, ${chatId}, ${content}, ${response})
+    `;
+  } catch (error) {
+    console.log("ERROR: find ME", error);
+    return {
+      message: 'Database Error: Failed to Create Message.',
     };
   }
 
-  const { msgId, content, chatId, response} = validatedFields.data;
-
-  try {
-    await sql`
-      INSERT INTO messages (msgId, content, chatId, response)
-      VALUES(${msgId}, ${content}, ${chatId}, ${response})
-    `;
-  } catch (error) {
-    console.log(error)
-    console.error("New Version of messaged creation failed.");
-    throw new Error("New Version of messaged creation failed.");
-  }
+  revalidatePath('/dashboard/chats');
+  redirect('/dashboard/chats');
 }
