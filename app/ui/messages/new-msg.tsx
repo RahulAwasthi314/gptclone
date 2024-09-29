@@ -5,14 +5,14 @@ import {
   ChatBubbleBottomCenterTextIcon,
 } from '@heroicons/react/24/outline';
 import { Button } from '@/app/ui/button';
-import { createChat, MsgState } from '@/app/lib/actions';
+import { ChatState, createChat } from '@/app/lib/actions';
 import { useActionState } from 'react';
 
 export default function NewMessageForm(
     // { message }: { message: Message }
 ) {
     
-  const initialState: MsgState = { message: null, errors: {} };
+  const initialState: ChatState = { message: null, errors: {} };
   const [state, chatAction] = useActionState(createChat, initialState);
   return (
     <form action={chatAction}>
